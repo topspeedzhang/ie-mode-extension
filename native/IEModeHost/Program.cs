@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Microsoft.Win32;
 
@@ -175,42 +176,28 @@ namespace IEModeHost
             stream.Flush();
         }
 
-        // Parse "url" value from {"url":"<value>"} without a JSON library.
-        // The chrome native message is always this exact shape.
+        // Parse "url" value from {"url":"<value>"} using a regex.
+        // (?:[^"\\]|\\.)* matches any char that isn't quote/backslash,
+        // or a backslash followed by any char (handles all JSON escapes safely).
+        private static readonly Regex UrlJsonRegex = new Regex(
+            @"""url""\s*:\s*""((?:[^""\\]|\\.)*)""",
+            RegexOptions.CultureInvariant | RegexOptions.Compiled);
+
         static string ExtractUrlFromJson(string json)
         {
             if (string.IsNullOrEmpty(json)) return null;
 
-            int keyIdx = json.IndexOf("\"url\"", StringComparison.Ordinal);
-            if (keyIdx < 0) return null;
+            var m = UrlJsonRegex.Match(json);
+            if (!m.Success) return null;
 
-            int colonIdx = json.IndexOf(':', keyIdx + 5);
-            if (colonIdx < 0) return null;
-
-            // Skip whitespace after colon
-            int openQuote = colonIdx + 1;
-            while (openQuote < json.Length && json[openQuote] != '"')
-                openQuote++;
-
-            if (openQuote >= json.Length) return null;
-
-            // Find closing quote, honouring backslash escapes
-            int closeQuote = openQuote + 1;
-            while (closeQuote < json.Length)
-            {
-                if (json[closeQuote] == '\\') { closeQuote += 2; continue; }
-                if (json[closeQuote] == '"')  break;
-                closeQuote++;
-            }
-
-            if (closeQuote >= json.Length) return null;
-
-            string raw = json.Substring(openQuote + 1, closeQuote - openQuote - 1);
-
-            // Un-escape basic JSON sequences in the URL (\\, \", \/)
-            return raw
-                .Replace("\\/", "/")
+            // Un-escape JSON string sequences — \\ must be processed last
+            // to avoid double-replacing sequences like \\/  into /\ then \.
+            return m.Groups[1].Value
+                .Replace("\\/",  "/")
                 .Replace("\\\"", "\"")
+                .Replace("\\n",  "\n")
+                .Replace("\\r",  "\r")
+                .Replace("\\t",  "\t")
                 .Replace("\\\\", "\\");
         }
     }

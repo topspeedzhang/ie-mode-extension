@@ -27,6 +27,14 @@
  *                               show install guide
  */
 
+// Substrings in Chrome's error message when the native host isn't registered.
+// These originate from Chrome internals and may vary by version/platform.
+const HOST_NOT_FOUND_PATTERNS = [
+  'not found',
+  'Specified native messaging host',
+  'Cannot find native messaging host',
+];
+
 const RESTRICTED_SCHEMES = [
   'chrome://',
   'chrome-extension://',
@@ -98,7 +106,22 @@ async function main() {
   }
 
   // Send to background → native host
+  // Guard against the background service worker never responding (e.g. crash,
+  // cold start timeout). Without this the popup spins indefinitely.
+  let responded = false;
+  const timeoutId = setTimeout(() => {
+    if (!responded) {
+      setState('error', {
+        title: 'Request timed out',
+        detail: 'The native host did not respond. Try again.',
+      });
+    }
+  }, 10000);
+
   chrome.runtime.sendMessage({ action: 'openInIE', url: tab.url }, (response) => {
+    clearTimeout(timeoutId);
+    responded = true;
+
     if (chrome.runtime.lastError) {
       handleNativeError(chrome.runtime.lastError.message);
       return;
@@ -114,12 +137,7 @@ async function main() {
 }
 
 function handleNativeError(errorMsg) {
-  // Chrome reports this specific message when the host is not registered
-  if (
-    errorMsg.includes('not found') ||
-    errorMsg.includes('Specified native messaging host') ||
-    errorMsg.includes('Cannot find native messaging host')
-  ) {
+  if (HOST_NOT_FOUND_PATTERNS.some((p) => errorMsg.includes(p))) {
     setState('no-host');
   } else {
     setState('error', {
