@@ -1,0 +1,9 @@
+{
+  "name": "com.iemode.host",
+  "description": "IE Mode native messaging host — opens pages in Trident/MSHTML rendering engine",
+  "path": "REPLACE_WITH_FULL_PATH_TO_IEModeHost.exe",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://REPLACE_WITH_YOUR_EXTENSION_ID/"
+  ]
+}

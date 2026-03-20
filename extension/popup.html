@@ -2,189 +2,155 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IE Mode</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      width: 260px;
+      width: 280px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       font-size: 13px;
       color: #202020;
       background: #fff;
     }
 
-    .container {
-      padding: 16px;
-    }
+    .container { padding: 16px; }
 
-    /* ── States ─────────────────────────────── */
+    /* ── State visibility ── */
+    .state { display: none; }
+    .state.active { display: block; }
 
-    .state {
-      display: none;
+    /* ── Row layout (icon + text) ── */
+    .row {
+      display: flex;
       align-items: center;
       gap: 10px;
     }
 
-    .state.active {
-      display: flex;
-    }
-
-    /* Loading */
-    #state-loading .icon {
-      width: 20px;
-      height: 20px;
+    /* ── Icons ── */
+    .icon-spin {
+      width: 20px; height: 20px; flex-shrink: 0;
       border: 2px solid #ddd;
       border-top-color: #0078d4;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
-      flex-shrink: 0;
     }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* Success */
-    #state-success .icon {
-      width: 20px;
-      height: 20px;
+    .icon-ok, .icon-err {
+      width: 20px; height: 20px; flex-shrink: 0;
       border-radius: 50%;
-      background: #107c10;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: #fff;
     }
+    .icon-ok  { background: #107c10; }
+    .icon-err { background: #c50f1f; }
 
-    #state-success .icon svg {
-      width: 12px;
-      height: 12px;
-      fill: none;
-      stroke: #fff;
+    .icon-ok svg {
+      width: 12px; height: 12px;
+      fill: none; stroke: #fff;
       stroke-width: 2.5;
       stroke-linecap: round;
       stroke-linejoin: round;
     }
 
-    /* Error (shares .error-icon class with state-no-edge) */
+    /* ── Text ── */
+    .t-main { font-weight: 500; line-height: 1.4; }
+    .t-sub  { color: #666; font-size: 11px; margin-top: 2px; line-height: 1.4; }
 
-    /* No Edge installed */
-    #state-no-edge {
-      display: none;
-      flex-direction: column;
-      gap: 10px;
-    }
+    /* ── Divider ── */
+    .divider { border: none; border-top: 1px solid #eee; margin: 12px 0; }
 
-    #state-no-edge.active {
-      display: flex;
-    }
-
-    #state-no-edge .message {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    #state-no-edge .install-btn {
-      display: block;
-      width: 100%;
-      padding: 7px 12px;
-      background: #0078d4;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      font-size: 12px;
-      cursor: pointer;
-      text-align: center;
-      text-decoration: none;
-    }
-
-    #state-no-edge .install-btn:hover {
-      background: #006cbd;
-    }
-
-    .error-icon {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: #c50f1f;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      font-size: 13px;
-      color: #fff;
-      font-weight: 700;
-      line-height: 1;
-    }
-
-    .text-main {
-      font-weight: 500;
-      line-height: 1.4;
-    }
-
-    .text-sub {
-      color: #666;
+    /* ── Install guide (no-host state) ── */
+    .steps { margin: 0; padding-left: 16px; }
+    .steps li { margin-bottom: 6px; line-height: 1.5; color: #333; }
+    .steps li code {
+      background: #f4f4f4;
+      border-radius: 3px;
+      padding: 1px 4px;
       font-size: 11px;
-      margin-top: 2px;
-      line-height: 1.4;
+      font-family: 'Cascadia Code', 'Consolas', monospace;
     }
+
+    .btn {
+      display: block; width: 100%;
+      margin-top: 10px;
+      padding: 7px 12px;
+      background: #0078d4; color: #fff;
+      border: none; border-radius: 4px;
+      font-size: 12px; font-weight: 500;
+      cursor: pointer; text-align: center; text-decoration: none;
+    }
+    .btn:hover { background: #006cbd; }
+    .btn.secondary {
+      background: #f4f4f4; color: #333;
+      margin-top: 6px;
+    }
+    .btn.secondary:hover { background: #e8e8e8; }
   </style>
 </head>
 <body>
-  <div class="container">
+<div class="container">
 
-    <!-- Loading -->
-    <div id="state-loading" class="state active">
-      <div class="icon"></div>
-      <div>
-        <div class="text-main">Opening in IE mode…</div>
-      </div>
+  <!-- ── Loading ── -->
+  <div id="state-loading" class="state active">
+    <div class="row">
+      <div class="icon-spin"></div>
+      <div><div class="t-main">Opening in IE mode…</div></div>
     </div>
-
-    <!-- Success -->
-    <div id="state-success" class="state">
-      <div class="icon">
-        <svg viewBox="0 0 12 12">
-          <polyline points="1.5,6 4.5,9 10.5,3"/>
-        </svg>
-      </div>
-      <div>
-        <div class="text-main">Opened in IE mode</div>
-        <div class="text-sub" id="success-detail"></div>
-      </div>
-    </div>
-
-    <!-- Error -->
-    <div id="state-error" class="state">
-      <div class="error-icon">!</div>
-      <div>
-        <div class="text-main" id="error-title">Something went wrong</div>
-        <div class="text-sub" id="error-detail"></div>
-      </div>
-    </div>
-
-    <!-- No Edge installed (Chrome only) -->
-    <div id="state-no-edge">
-      <div class="message">
-        <div class="error-icon">!</div>
-        <div>
-          <div class="text-main">Microsoft Edge required</div>
-          <div class="text-sub">IE mode needs Edge installed on Windows.</div>
-        </div>
-      </div>
-      <a id="install-edge-btn" class="install-btn" href="https://www.microsoft.com/en-us/edge" target="_blank" rel="noopener noreferrer">
-        Download Microsoft Edge
-      </a>
-    </div>
-
   </div>
-  <script src="popup.js"></script>
+
+  <!-- ── Success ── -->
+  <div id="state-success" class="state">
+    <div class="row">
+      <div class="icon-ok">
+        <svg viewBox="0 0 12 12"><polyline points="1.5,6 4.5,9 10.5,3"/></svg>
+      </div>
+      <div><div class="t-main">Opened in IE mode</div></div>
+    </div>
+  </div>
+
+  <!-- ── Generic error ── -->
+  <div id="state-error" class="state">
+    <div class="row">
+      <div class="icon-err">!</div>
+      <div>
+        <div class="t-main" id="error-title">Something went wrong</div>
+        <div class="t-sub"  id="error-detail"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Native host not installed ── -->
+  <div id="state-no-host" class="state">
+    <div class="row">
+      <div class="icon-err">!</div>
+      <div><div class="t-main">Native host not installed</div></div>
+    </div>
+    <hr class="divider">
+    <ol class="steps">
+      <li>Build <code>IEModeHost.exe</code> from the <code>native/</code> folder</li>
+      <li>Run <code>install.ps1</code> (right-click → Run with PowerShell)</li>
+      <li>Add your extension ID to <code>com.iemode.host.json</code></li>
+      <li>Reload this extension (<code>chrome://extensions</code>)</li>
+    </ol>
+    <a class="btn secondary" id="open-guide-btn" href="#">
+      View setup guide
+    </a>
+  </div>
+
+  <!-- ── Windows required ── -->
+  <div id="state-no-windows" class="state">
+    <div class="row">
+      <div class="icon-err">!</div>
+      <div>
+        <div class="t-main">Windows required</div>
+        <div class="t-sub">IE rendering is only available on Windows.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script src="popup.js"></script>
 </body>
 </html>

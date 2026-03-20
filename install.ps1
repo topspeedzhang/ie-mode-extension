@@ -1,0 +1,90 @@
+# install.ps1 — IE Mode native messaging host installer
+# Run with: Right-click → "Run with PowerShell"
+# No administrator privileges required (writes to HKCU).
+
+$ErrorActionPreference = 'Stop'
+
+# ── Locate IEModeHost.exe ─────────────────────────────────────────────────────
+
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$exeRelative = Join-Path $scriptDir "native\IEModeHost\bin\Release\IEModeHost.exe"
+$_resolved = Resolve-Path $exeRelative -ErrorAction SilentlyContinue
+$exePath = if ($_resolved) { $_resolved.Path } else { $null }
+
+if (-not $exePath) {
+    Write-Host ""
+    Write-Host "ERROR: IEModeHost.exe not found at:" -ForegroundColor Red
+    Write-Host "  $exeRelative" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "Build it first:" -ForegroundColor Yellow
+    Write-Host "  1. Open native\IEModeHost\IEModeHost.csproj in Visual Studio"
+    Write-Host "     (or run:  msbuild native\IEModeHost\IEModeHost.csproj /p:Configuration=Release)"
+    Write-Host "  2. Re-run this script"
+    Write-Host ""
+    Read-Host "Press Enter to exit"
+    exit 1
+}
+
+Write-Host "Found IEModeHost.exe:" -ForegroundColor Green
+Write-Host "  $exePath"
+
+# ── Ask for the extension ID ──────────────────────────────────────────────────
+
+Write-Host ""
+Write-Host "You need your Chrome/Edge extension ID." -ForegroundColor Cyan
+Write-Host "  1. Go to  chrome://extensions  (or  edge://extensions)"
+Write-Host "  2. Enable 'Developer mode' (top-right toggle)"
+Write-Host "  3. Find 'IE Mode' in the list and copy the ID"
+Write-Host "     (looks like: abcdefghijklmnopabcdefghijklmnop)"
+Write-Host ""
+$extId = Read-Host "Extension ID"
+$extId = $extId.Trim()
+
+if ($extId -notmatch '^[a-p]{32}$') {
+    Write-Host ""
+    Write-Host "WARNING: '$extId' doesn't look like a valid extension ID." -ForegroundColor Yellow
+    Write-Host "  Expected 32 lowercase letters a-p."
+    Write-Host "  You can update com.iemode.host.json manually later."
+    Write-Host ""
+}
+
+$origin = "chrome-extension://$extId/"
+
+# ── Write the native messaging manifest ──────────────────────────────────────
+
+$manifestPath = Join-Path $scriptDir "native\com.iemode.host.json"
+
+$manifest = @{
+    name            = "com.iemode.host"
+    description     = "IE Mode native messaging host"
+    path            = $exePath
+    type            = "stdio"
+    allowed_origins = @($origin)
+} | ConvertTo-Json -Depth 4
+
+Set-Content -Path $manifestPath -Value $manifest -Encoding UTF8
+Write-Host ""
+Write-Host "Written: $manifestPath" -ForegroundColor Green
+
+# ── Register in the Windows registry (HKCU, no admin needed) ─────────────────
+
+$chromePath = "HKCU:\Software\Google\Chrome\NativeMessagingHosts\com.iemode.host"
+$edgePath   = "HKCU:\Software\Microsoft\Edge\NativeMessagingHosts\com.iemode.host"
+
+foreach ($regPath in @($chromePath, $edgePath)) {
+    $null = New-Item -Path $regPath -Force
+    Set-ItemProperty -Path $regPath -Name "(default)" -Value $manifestPath
+    Write-Host "Registered: $regPath" -ForegroundColor Green
+}
+
+# ── Done ──────────────────────────────────────────────────────────────────────
+
+Write-Host ""
+Write-Host "Installation complete!" -ForegroundColor Green
+Write-Host ""
+Write-Host "Next steps:" -ForegroundColor Cyan
+Write-Host "  1. Go to chrome://extensions (or edge://extensions)"
+Write-Host "  2. Find 'IE Mode' and click the reload icon  ↺"
+Write-Host "  3. Navigate to any http/https page and click the IE Mode toolbar button"
+Write-Host ""
+Read-Host "Press Enter to exit"

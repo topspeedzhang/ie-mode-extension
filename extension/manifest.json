@@ -2,8 +2,11 @@
   "manifest_version": 3,
   "name": "IE Mode",
   "short_name": "IE Mode",
-  "description": "Open the current page in Internet Explorer mode with one click. Free.",
+  "description": "Open the current page with Internet Explorer rendering engine. Free.",
   "version": "1.0.0",
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -13,7 +16,7 @@
     },
     "default_title": "Open in IE Mode"
   },
-  "permissions": ["activeTab"],
+  "permissions": ["activeTab", "nativeMessaging"],
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
