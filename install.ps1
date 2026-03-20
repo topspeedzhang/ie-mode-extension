@@ -16,10 +16,8 @@ if (-not $exePath) {
     Write-Host "ERROR: IEModeHost.exe not found at:" -ForegroundColor Red
     Write-Host "  $exeRelative" -ForegroundColor Red
     Write-Host ""
-    Write-Host "Build it first:" -ForegroundColor Yellow
-    Write-Host "  1. Open native\IEModeHost\IEModeHost.csproj in Visual Studio"
-    Write-Host "     (or run:  msbuild native\IEModeHost\IEModeHost.csproj /p:Configuration=Release)"
-    Write-Host "  2. Re-run this script"
+    Write-Host "Make sure you cloned or downloaded the full repository" -ForegroundColor Yellow
+    Write-Host "  (IEModeHost.exe should be included in the release package)"
     Write-Host ""
     Read-Host "Press Enter to exit"
     exit 1
