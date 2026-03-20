@@ -82,7 +82,7 @@ Write-Host "Installation complete!" -ForegroundColor Green
 Write-Host ""
 Write-Host "Next steps:" -ForegroundColor Cyan
 Write-Host "  1. Go to chrome://extensions (or edge://extensions)"
-Write-Host "  2. Find 'IE Mode' and click the reload icon  ↺"
+Write-Host "  2. Find 'IE Mode' and click the reload icon (the circular arrow)"
 Write-Host "  3. Navigate to any http/https page and click the IE Mode toolbar button"
 Write-Host ""
 Read-Host "Press Enter to exit"
