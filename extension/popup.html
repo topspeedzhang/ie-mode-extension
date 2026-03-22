@@ -72,6 +72,37 @@
       font-family: 'Cascadia Code', 'Consolas', monospace;
     }
 
+    /* ── Extension ID row ── */
+    .id-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .id-field {
+      flex: 1;
+      min-width: 0;
+      font-family: 'Cascadia Code', 'Consolas', monospace;
+      font-size: 10px;
+      padding: 4px 6px;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      background: #f9f9f9;
+      color: #333;
+    }
+    .btn-copy {
+      flex-shrink: 0;
+      padding: 4px 10px;
+      background: #0078d4;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .btn-copy:hover { background: #006cbd; }
+    .btn-copy.copied { background: #107c10; }
+
     .btn {
       display: block; width: 100%;
       margin-top: 10px;
@@ -128,13 +159,16 @@
       <div><div class="t-main">Native host not installed</div></div>
     </div>
     <hr class="divider">
+    <div class="t-sub" style="margin-bottom:4px;">Your extension ID:</div>
+    <div class="id-row">
+      <input id="ext-id-field" class="id-field" readonly>
+      <button id="copy-id-btn" class="btn-copy">Copy</button>
+    </div>
     <ol class="steps">
-      <li>Run <code>install.ps1</code> (right-click → Run with PowerShell)</li>
+      <li>Copy the ID above</li>
+      <li>Right-click <code>install.ps1</code> → Run with PowerShell, paste when prompted</li>
       <li>Reload this extension (<code>chrome://extensions</code>)</li>
     </ol>
-    <a class="btn secondary" id="open-guide-btn" href="#">
-      View setup guide
-    </a>
   </div>
 
   <!-- ── Windows required ── -->

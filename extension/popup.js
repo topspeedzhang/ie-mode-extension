@@ -72,6 +72,10 @@ function setState(active, opts = {}) {
     document.getElementById('error-title').textContent = opts.title || 'Something went wrong';
     document.getElementById('error-detail').textContent = opts.detail || '';
   }
+
+  if (active === 'no-host') {
+    document.getElementById('ext-id-field').value = chrome.runtime.id;
+  }
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
@@ -147,4 +151,18 @@ function handleNativeError(errorMsg) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', main);
+document.addEventListener('DOMContentLoaded', () => {
+  main();
+
+  document.getElementById('copy-id-btn').addEventListener('click', () => {
+    navigator.clipboard.writeText(chrome.runtime.id).then(() => {
+      const btn = document.getElementById('copy-id-btn');
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  });
+});

@@ -1,6 +1,13 @@
 # install.ps1 — IE Mode native messaging host installer
 # Run with: Right-click → "Run with PowerShell"
 # No administrator privileges required (writes to HKCU).
+#
+# Optional: pass -ExtensionId to skip the interactive prompt, e.g.
+#   .\install.ps1 -ExtensionId abcdefghijklmnopabcdefghijklmnop
+
+param(
+    [string]$ExtensionId = ""
+)
 
 $ErrorActionPreference = 'Stop'
 
@@ -26,17 +33,21 @@ if (-not $exePath) {
 Write-Host "Found IEModeHost.exe:" -ForegroundColor Green
 Write-Host "  $exePath"
 
-# ── Ask for the extension ID ──────────────────────────────────────────────────
+# ── Ask for the extension ID (skipped if passed as parameter) ────────────────
 
-Write-Host ""
-Write-Host "You need your Chrome/Edge extension ID." -ForegroundColor Cyan
-Write-Host "  1. Go to  chrome://extensions  (or  edge://extensions)"
-Write-Host "  2. Enable 'Developer mode' (top-right toggle)"
-Write-Host "  3. Find 'IE Mode' in the list and copy the ID"
-Write-Host "     (looks like: abcdefghijklmnopabcdefghijklmnop)"
-Write-Host ""
-$extId = Read-Host "Extension ID"
-$extId = $extId.Trim()
+if ($ExtensionId) {
+    $extId = $ExtensionId.Trim()
+    Write-Host ""
+    Write-Host "Using extension ID: $extId" -ForegroundColor Cyan
+} else {
+    Write-Host ""
+    Write-Host "You need your Chrome/Edge extension ID." -ForegroundColor Cyan
+    Write-Host "  Tip: click the IE Mode toolbar button — it shows the ID automatically."
+    Write-Host "  Or: chrome://extensions  →  enable Developer mode  →  copy the ID"
+    Write-Host "     (looks like: abcdefghijklmnopabcdefghijklmnop)"
+    Write-Host ""
+    $extId = (Read-Host "Extension ID").Trim()
+}
 
 if ($extId -notmatch '^[a-p]{32}$') {
     Write-Host ""
