@@ -1,17 +1,13 @@
 'use strict';
 
 /**
- * Background service worker — native messaging relay
+ * Background service worker
  *
- *   popup.js  --[sendMessage]--> background.js
- *                                     |
- *                         sendNativeMessage("com.iemode.host")
- *                                     |
- *                               IEModeHost.exe
- *                               (Mode A: reads URL,
- *                                spawns viewer process,
- *                                sends {"status":"ok"},
- *                                exits)
+ * NOTE: The native messaging call was moved to popup.js (direct
+ * sendNativeMessage) to avoid "Could not establish connection" errors
+ * caused by the MV3 service worker being terminated while the popup
+ * is open. This file is kept for any future background tasks but is
+ * not currently used in the main flow.
  */
 
 const NATIVE_HOST = 'com.iemode.host';

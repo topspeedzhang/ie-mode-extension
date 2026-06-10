@@ -14,17 +14,22 @@
  *   Restricted URL?  ──yes──▶ show error
  *         │no
  *         ▼
- *   Send message to background service worker
- *   {action: "openInIE", url}
+ *   sendNativeMessage("com.iemode.host", {url})   ← direct, no background relay
  *         │
  *   ┌─────┴──────────────────────────────────┐
  *   │                                        │
- * success                                 error
+ * {status:"ok"}                           error
  *   │                                        │
  *   ▼                               ┌────────┴────────┐
  * show success                 "not found"        other error
  * + auto-close             (host not installed)  show message
  *                               show install guide
+ *
+ * Note: popup.js calls sendNativeMessage directly instead of relaying through
+ * the background service worker. In MV3, the service worker can be terminated
+ * while the popup is open, causing "Could not establish connection" errors.
+ * Extension pages (popup) can call sendNativeMessage directly, so the relay
+ * is unnecessary.
  */
 
 // Substrings in Chrome's error message when the native host isn't registered.
@@ -109,9 +114,9 @@ async function main() {
     return;
   }
 
-  // Send to background → native host
-  // Guard against the background service worker never responding (e.g. crash,
-  // cold start timeout). Without this the popup spins indefinitely.
+  // Call the native host directly from the popup.
+  // Guard against the native host never responding (e.g. crash or cold-start
+  // timeout). Without this the popup spins indefinitely.
   let responded = false;
   const timeoutId = setTimeout(() => {
     if (!responded) {
@@ -122,7 +127,7 @@ async function main() {
     }
   }, 10000);
 
-  chrome.runtime.sendMessage({ action: 'openInIE', url: tab.url }, (response) => {
+  chrome.runtime.sendNativeMessage('com.iemode.host', { url: tab.url }, (response) => {
     clearTimeout(timeoutId);
     responded = true;
 
@@ -131,11 +136,11 @@ async function main() {
       return;
     }
 
-    if (response?.success) {
+    if (response?.status === 'ok') {
       setState('success');
       setTimeout(() => window.close(), 900);
     } else {
-      handleNativeError(response?.error || 'Unknown error');
+      handleNativeError(response?.message || 'Unknown error');
     }
   });
 }
